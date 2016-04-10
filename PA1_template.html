@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+<title></title>
+
+<script type="text/javascript">
+window.onload = function() {
+  var imgs = document.getElementsByTagName('img'), i, img;
+  for (i = 0; i < imgs.length; i++) {
+    img = imgs[i];
+    // center an image if it is the only element of its parent
+    if (img.parentElement.childElementCount === 1)
+      img.parentElement.style.textAlign = 'center';
+  }
+};
+</script>
+
+
+
+
+
+<style type="text/css">
+body, td {
+   font-family: sans-serif;
+   background-color: white;
+   font-size: 13px;
+}
+
+body {
+  max-width: 800px;
+  margin: auto;
+  padding: 1em;
+  line-height: 20px;
+}
+
+tt, code, pre {
+   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+}
+
+h1 {
+   font-size:2.2em;
+}
+
+h2 {
+   font-size:1.8em;
+}
+
+h3 {
+   font-size:1.4em;
+}
+
+h4 {
+   font-size:1.0em;
+}
+
+h5 {
+   font-size:0.9em;
+}
+
+h6 {
+   font-size:0.8em;
+}
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
+}
+
+pre, img {
+  max-width: 100%;
+}
+pre {
+  overflow-x: auto;
+}
+pre code {
+   display: block; padding: 0.5em;
+}
+
+code {
+  font-size: 92%;
+  border: 1px solid #ccc;
+}
+
+code[class] {
+  background-color: #F8F8F8;
+}
+
+table, td, th {
+  border: none;
+}
+
+blockquote {
+   color:#666666;
+   margin:0;
+   padding-left: 1em;
+   border-left: 0.5em #EEE solid;
+}
+
+hr {
+   height: 0px;
+   border-bottom: none;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
+}
+
+@media print {
+   * {
+      background: transparent !important;
+      color: black !important;
+      filter:none !important;
+      -ms-filter: none !important;
+   }
+
+   body {
+      font-size:12pt;
+      max-width:100%;
+   }
+
+   a, a:visited {
+      text-decoration: underline;
+   }
+
+   hr {
+      visibility: hidden;
+      page-break-before: always;
+   }
+
+   pre, blockquote {
+      padding-right: 1em;
+      page-break-inside: avoid;
+   }
+
+   tr, img {
+      page-break-inside: avoid;
+   }
+
+   img {
+      max-width: 100% !important;
+   }
+
+   @page :left {
+      margin: 15mm 20mm 15mm 10mm;
+   }
+
+   @page :right {
+      margin: 15mm 10mm 15mm 20mm;
+   }
+
+   p, h2, h3 {
+      orphans: 3; widows: 3;
+   }
+
+   h2, h3 {
+      page-break-after: avoid;
+   }
+}
+</style>
+
+
+
+</head>
+
+<body>
+<p>getwd()</p>
+
+<p>#Loading required packages in R</p>
+
+<p>library(knitr)
+opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(lubridate)</p>
+
+<p>#Reading the data</p>
+
+<p>data &lt;- read.csv(&ldquo;activity.csv&rdquo;, header = TRUE, sep = &#39;,&#39;, colClasses = c(&ldquo;numeric&rdquo;, &ldquo;character&rdquo;, &ldquo;integer&rdquo;))</p>
+
+<p>#Formating the data
+data$date &lt;- ymd(data$date)</p>
+
+<p>#Checking the data with formatted date
+str(data)
+head(data)</p>
+
+<p>#Solving for mean and median of the total number of steps
+#1. Calculating the total number of steps taken per day using dplyr and grouping the data by date</p>
+
+<p>steps &lt;- data%&gt;%
+    filter(!is.na(steps))%&gt;%
+    group_by(date)%&gt;%
+    summarize(steps = sum(steps))%&gt;%
+    print</p>
+
+<p>#2. Plotting a histogram for the data by ggplot</p>
+
+<p>ggplot(steps, aes(x = steps)) + 
+geom_histogram(fill = &ldquo;firebrick&rdquo;, binwidth = 1000)+ 
+labs(title = &ldquo;Histogram of Steps per day&rdquo;,  x = &ldquo;Steps per day&rdquo;, y = &ldquo;Frequency&rdquo;)</p>
+
+<p>#3. Calculating the mean and median</p>
+
+<p>mean_steps &lt;- mean(steps$steps, na.rm = TRUE)
+median_steps &lt;- median(steps$steps, na.rm = TRUE)</p>
+
+<p>#Solving for the average daily activity pattern
+#1a. Calculating the average number of steps taken in each 5 minute interval using dplyr and grouping by interval</p>
+
+<p>interval &lt;- data %&gt;%
+    filter(!is.na(steps)) %&gt;%
+    group_by(interval) %&gt;%
+    summarize(steps = mean(steps))</p>
+
+<p>#1b. Plotting a time series plot of the 5 minute interval data using ggplot</p>
+
+<p>ggplot(interval, aes(x=interval, y=steps)) +
+geom_line(color = &ldquo;firebrick&rdquo;)</p>
+
+<p>#2. Finding the maximum number of steps on an average using the which.max() function</p>
+
+<p>interval[which.max(interval$steps),]</p>
+
+<p>#Imputting Missing Values
+#1. Calculating the number of missing values</p>
+
+<p>sum(is.na(data$steps))</p>
+
+<p>#2. Filling up missing NA with the average number of steps taken in 5 minute interval
+#3. Creating a new dataset as the original using tapply for filling in the missing values </p>
+
+<p>data_full &lt;- data
+nas &lt;- is.na(data_full$steps)
+avg_interval &lt;- tapply(data_full$steps, data_full$interval, mean, na.rm=TRUE, simplify=TRUE)
+data_full$steps[nas] &lt;- avg_interval[as.character(data_full$interval[nas])]</p>
+
+<p>#Check for no missing values</p>
+
+<p>sum(is.na(data_full$steps))</p>
+
+<p>#4. Calculating the number of steps taken in each day</p>
+
+<p>steps_full &lt;- data_full %&gt;%
+    filter(!is.na(steps)) %&gt;%
+    group_by(date) %&gt;%
+    summarize(steps = sum(steps)) %&gt;%
+    print</p>
+
+<p>#Plotting the histogram of the above data</p>
+
+<p>ggplot(steps_full, aes(x = steps)) +
+geom_histogram(fill = &ldquo;firebrick&rdquo;, binwidth = 1000) +
+labs(title = &ldquo;Histogram of Steps per day, including missing values&rdquo;, x = &ldquo;Steps per day&rdquo;, y = &ldquo;Frequency&rdquo;)</p>
+
+<p>#Calculating the mean and median of the above data</p>
+
+<p>mean_steps_full &lt;- mean(steps_full$steps, na.rm = TRUE)
+median_steps_full &lt;- median(steps_full$steps, na.rm = TRUE)</p>
+
+<p>#Finding differences in activity patterns in weekdays and weekends
+#1. Using dplyr and mutate to create a column, weektype and apply whether it is a weekday or weekend</p>
+
+<p>data_full &lt;- mutate(data_full, weektype = ifelse(weekdays(data_full$date) == &ldquo;Saturday&rdquo; | weekdays(data_full$date) == &ldquo;Sunday&rdquo;, &ldquo;weekend&rdquo;, &ldquo;weekday&rdquo;))
+data_full$weektype &lt;- as.factor(data_full$weektype)
+head(data_full)</p>
+
+<p>#2. Calculating th average steps in the 5 minute interval for weekday and weekend and plotting the time series and comparing the average steps</p>
+
+<p>interval_full &lt;- data_full %&gt;%
+    group_by(interval, weektype) %&gt;%
+    summarise(steps = mean(steps))
+time_series &lt;- ggplot(interval_full, aes(x=interval, y=steps, color = weektype)) +
+geom_line() +
+facet_wrap(~weektype, ncol = 1, nrow=2)
+print(time_series)</p>
+
+</body>
+
+</html>
